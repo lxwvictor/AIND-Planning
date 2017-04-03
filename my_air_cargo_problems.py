@@ -174,7 +174,23 @@ class AirCargoProblem(Problem):
         :return: resulting state after action
         """
         # TODO implement
-        new_state = FluentState([], [])
+        # if action in self.actions(state):
+        newPos = []
+        newNeg = []
+        for i, char in enumerate(state):
+            if char == 'T':
+                newPos.append(self.state_map[i])
+            else:
+                newNeg.append(self.state_map[i])
+
+        for add in action.effect_add:
+            newPos.append(add)
+            newNeg.remove(add)
+        for rem in action.effect_rem:
+            newPos.remove(rem)
+            newNeg.append(rem)
+
+        new_state = FluentState(newPos, newNeg)
         return encode_state(new_state, self.state_map)
 
     def goal_test(self, state: str) -> bool:
@@ -216,8 +232,18 @@ class AirCargoProblem(Problem):
         '''
         # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
         count = 0
-        return count
+        newPos = []
+        newNeg = []
+        for i, char in enumerate(self.initial):
+            if char == 'T':
+                newPos.append(self.state_map[i])
+            else:
+                newNeg.append(self.state_map[i])
 
+        for clause in self.goal:
+            if clause not in newPos:
+                count += 1
+        return count
 
 def air_cargo_p1() -> AirCargoProblem:
     cargos = ['C1', 'C2']
