@@ -174,7 +174,16 @@ class AirCargoProblem(Problem):
         :return: resulting state after action
         """
         # TODO implement
-        # if action in self.actions(state):
+        # check whether the action is in the action list
+        isValidAction = False
+        for act in self.actions_list:
+            if (action.name == act.name) and (action.args == act.args):
+                isValidAction = True
+                break
+
+        if not isValidAction:
+            raise ValueError("Invalid action!")
+
         newPos = []
         newNeg = []
         for i, char in enumerate(state):

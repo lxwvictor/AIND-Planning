@@ -311,6 +311,38 @@ class PlanningGraph():
         #   set iff all prerequisite literals for the action hold in S0.  This can be accomplished by testing
         #   to see if a proposed PgNode_a has prenodes that are a subset of the previous S level.  Once an
         #   action node is added, it MUST be connected to the S node instances in the appropriate s_level set.
+        self.a_levels.append(set())
+        for act in self.all_actions:
+            prePosPass = True
+            preNegPass = True
+            for prePos in act.precond_pos:  # prePos is an Expr object
+                idx = 0
+                for parentSNode in self.s_levels[level]:    # self.s_levels[level] is a set, parentSNode is a PgNode_s
+                    # Go through all the parent s nodes, do note the s_levels is a set
+                    idx += 1
+                    if prePosPass == True and parentSNode.is_pos and prePos.__eq__(parentSNode.symbol):
+                        break
+                    if idx == len(self.s_levels[level]):
+                        # If any of the precondition not satisfied, no need to check further
+                        prePosPass = False
+
+            for preNeg in act.precond_neg:
+                idx = 0
+                for parentSNode in self.s_levels[level]:
+                    idx += 1
+                    if preNegPass == True and (not parentSNode.is_pos) and preNeg.__eq__(parentSNode.symbol):
+                        break
+                    if idx == len(self.s_levels[level]):
+                        preNegPass = False
+
+            if prePosPass == preNegPass == True:
+                curANode = PgNode_a(act)
+                for parentSNode in self.s_levels[level]:
+                    for curANodePre in curANode.prenodes:
+                        if parentSNode.__eq__(curANodePre):
+                            parentSNode.children.add(curANode)
+                            curANode.parents.add(parentSNode)
+                self.a_levels[level].add(curANode)
 
     def add_literal_level(self, level):
         ''' add an S (literal) level to the Planning Graph
@@ -387,6 +419,16 @@ class PlanningGraph():
         :return: bool
         '''
         # TODO test for Inconsistent Effects between nodes
+        for aEffect in node_a1.action.effect_add:
+            for rEffect in node_a2.action.effect_rem:
+                if aEffect.__eq__(rEffect):
+                    return True
+
+        for rEffect in node_a1.action.effect_rem:
+            for aEffect in node_a2.action.effect_add:
+                if rEffect.__eq__(aEffect):
+                    return True
+
         return False
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
@@ -404,6 +446,26 @@ class PlanningGraph():
         :return: bool
         '''
         # TODO test for Interference between nodes
+        for aEffect in node_a1.action.effect_add:
+            for nPrecond in node_a2.action.precond_neg:
+                if aEffect.__eq__(nPrecond):
+                    return True
+
+        for rEffect in node_a1.action.effect_rem:
+            for pPrecond in node_a2.action.precond_pos:
+                if rEffect.__eq__(pPrecond):
+                    return True
+
+        for pPrecond in node_a1.action.precond_pos:
+            for rEffect in node_a2.action.effect_rem:
+                if pPrecond.__eq__(rEffect):
+                    return True
+
+        for nPrecond in node_a1.action.precond_neg:
+            for aEffect in node_a2.action.effect_add:
+                if nPrecond.__eq__(aEffect):
+                    return True
+
         return False
 
     def competing_needs_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
@@ -418,6 +480,16 @@ class PlanningGraph():
         '''
 
         # TODO test for Competing Needs between nodes
+        for pPrecond in node_a1.action.precond_pos:
+            for nPrecond in node_a2.action.precond_neg:
+                if pPrecond.__eq__(nPrecond):
+                    return True
+
+        for nPrecond in node_a1.action.precond_neg:
+            for pPrecond in node_a2.action.precond_pos:
+                if nPrecond.__eq__(pPrecond):
+                    return True
+
         return False
 
     def update_s_mutex(self, nodeset: set):
