@@ -9,6 +9,10 @@ from lp_utils import (
 )
 from my_planning_graph import PlanningGraph
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.info("Started my_air_cargo_problems.py")
+
 
 class AirCargoProblem(Problem):
     def __init__(self, cargos, planes, airports, initial: FluentState, goal: list):
@@ -369,3 +373,5 @@ def air_cargo_p3() -> AirCargoProblem:
             ]
     return AirCargoProblem(cargos, planes, airports, init, goal)
     pass
+
+logging.info("Finished my_air_cargo_problems.py")

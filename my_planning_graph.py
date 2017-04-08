@@ -3,6 +3,9 @@ from aimacode.search import Problem
 from aimacode.utils import expr
 from lp_utils import decode_state
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.info("Started my_planning_graph.py")
 
 class PgNode():
     ''' Base class for planning graph nodes.
@@ -593,3 +596,5 @@ class PlanningGraph():
                             foundGoalSNode = True
                             break
         return level_sum
+
+logging.info("Finished my_planning_graph.py")
